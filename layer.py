@@ -74,9 +74,12 @@ def mixmatch(x, y, u, model, augment_fn, T=0.5, K=2, alpha=0.75):
     qb = sharpen(avg_probs, T)
     Ux = np.concatenate(ub, axis=0)
     Uy = np.concatenate([qb for _ in range(K)], axis=0)
-    indices = np.random.shuffle(np.arange(len(xb) + len(Ux)))
+    # Randon shuffle according to the paper
+    indices = np.arange(len(xb) + len(Ux))
+    np.random.shuffle(indices) 
+    # MixUp
     Wx = np.concatenate([Ux, xb], axis=0)[indices]
-    Wy = np.concatenate([qb, y], axis=0)[indices]
+    Wy = np.concatenate([Uy, y], axis=0)[indices]
     X, p = mixup_mod(xb, Wx[:len(xb)], y, Wy[:len(xb)], alpha)
     U, q = mixup_mod(Ux, Wx[len(xb):], Uy, Wy[len(xb):], alpha)
     
