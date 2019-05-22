@@ -28,11 +28,28 @@ def mixup_mod(x1, x2, y1, y2, alpha):
     y = beta * y1 + (1 - beta) * y2
     return x, y
 
+def label_guessing(model, ub, K):
+    # Device configuration
+    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    model.eval()
+    probs = []
+    for batch in ub:
+        batch = torch.from_numpy(np.asarray(batch).transpose((0, 3, 1, 2))).to(device, dtype=torch.float)
+        pr = model(batch) 
+        probs.append(pr)
+
+    sum = probs[0]
+    for i in range(1,len(probs)):
+        sum.add_(probs[i])
+
+    return (sum/K).cpu().detach().numpy()
+
 
 def mixmatch(x, y, u, model, augment_fn, T=0.5, K=2, alpha=0.75):
     xb = augment_fn(x)
     ub = [augment_fn(u) for _ in range(K)]
-    qb = sharpen(sum(map(lambda i: model(i), ub)) / K)
+    avg_probs = label_guessing(model, ub, K)
+    qb = sharpen(avg_probs, T)
     Ux = np.concatenate(ub, axis=0)
     Uy = np.concatenate([qb for _ in range(K)], axis=0)
     indices = np.random.shuffle(np.arange(len(xb) + len(Ux)))
