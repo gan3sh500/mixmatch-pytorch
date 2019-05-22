@@ -20,8 +20,10 @@ def sharpen(x, T):
     return temp / temp.sum(axis=1, keepdims=True)
     
     
-def mixup(x1, x2, y1, y2, alpha):
-    beta = np.random.beta(alpha, -alpha)
+def mixup_mod(x1, x2, y1, y2, alpha):
+    # lambda is a reserved word in python, substituting by beta
+    beta = np.random.beta(alpha, alpha) 
+    beta = np.amax([beta, 1-beta])
     x = beta * x1 + (1 - beta) * x2
     y = beta * y1 + (1 - beta) * y2
     return x, y
@@ -36,8 +38,8 @@ def mixmatch(x, y, u, model, augment_fn, T=0.5, K=2, alpha=0.75):
     indices = np.random.shuffle(np.arange(len(xb) + len(Ux)))
     Wx = np.concatenate([Ux, xb], axis=0)[indices]
     Wy = np.concatenate([qb, y], axis=0)[indices]
-    X, p = mixup(xb, Wx[:len(xb)], y, Wy[:len(xb)], alpha)
-    U, q = mixup(Ux, Wx[len(xb):], Uy, Wy[len(xb):], alpha)
+    X, p = mixup_mod(xb, Wx[:len(xb)], y, Wy[:len(xb)], alpha)
+    U, q = mixup_mod(Ux, Wx[len(xb):], Uy, Wy[len(xb):], alpha)
     return X, p, U, q
 
 
