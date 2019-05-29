@@ -4,7 +4,7 @@ A Pytorch Implementation of the paper MixMatch: A Holistic Approach to Semi-Supe
 * Train on CIFAR10 data. 
 * ~Add training code for CIFAR10 with WideResnet28 from [here](https://github.com/meliketoy/wide-resnet.pytorch/blob/master/networks/wide_resnet.py).~
 
-## Dependancies
+## Dependencies
 ```
 pip install <pytorch-latest.whl url>
 ```
